@@ -1,0 +1,16 @@
+build/
+
+data/
+
+.clangd
+
+*.o
+*.a
+*.so
+
+*.prof
+*.hdf5
+*.dem
+*.json
+
+venv/
