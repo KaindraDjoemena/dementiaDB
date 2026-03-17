@@ -254,6 +254,7 @@ void IndexHNSW::open(std::ifstream& f)
 {
     // Index Distance Function
     f.read((char*)&m_metric,         sizeof(m_metric));
+    setMetric(m_metric);
 
     // Vector Size
     f.read((char*)&m_numVectors,     sizeof(m_numVectors));
