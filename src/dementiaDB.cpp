@@ -158,7 +158,7 @@ size_t DementiaDB::getIndexHNSWParam(const std::string& colName, HNSW_PARAM para
     }
 }
 
-std::vector<nlohmann::json> DementiaDB::search(const std::string& colName, const std::vector<float>& q, size_t k)
+std::vector<nlohmann::json> DementiaDB::search(const std::string& colName, const std::vector<float>& q, size_t k, const nlohmann::json& filter/*={}*/, size_t searchMult/*=3*/)
 {
     auto it = m_collections.find(colName);
     if (it == m_collections.end())
@@ -166,14 +166,23 @@ std::vector<nlohmann::json> DementiaDB::search(const std::string& colName, const
         return {};
     }
 
-    std::vector<Index::Candidate> searchResults = it->second.index->search(q.data(), k);
+    std::vector<Index::Candidate> searchResults = it->second.index->search(q.data(), k * searchMult);
 
     std::vector<nlohmann::json> results;
     results.reserve(searchResults.size());
 
     for (const auto& candidate : searchResults)
     {
-        results.push_back(it->second.metadata.get(candidate.id));
+        auto meta = m_collections[colName].metadata.get(candidate.id);
+        if (filter.empty() || postFilter(meta, filter))
+        {
+            results.push_back(meta);
+
+            if (results.size() == k)
+            {
+                break;
+            }
+        }
     }
 
     return results;
@@ -300,5 +309,59 @@ int DementiaDB::open(const std::filesystem::path& p)
         return -1;
     }
 }
+
+// PRIVATE
+bool postFilter(const nlohmann::json& meta, const nlohmann::json& filter)
+{
+    for (auto& [field, cond] : filter.items())
+    {
+        if (!meta.contains(field))
+        {
+            return false;
+        }
+
+        for (auto& [op, val] : cond.items())
+        {
+            if (op == "$eq")                // ==
+            {
+                if (meta[field] != val)
+                    return false;
+            }
+            else if (op == "$gt")           // >
+            {
+                if (meta[field] <= val) 
+                    return false;
+            }
+            else if (op == "$ls")           // <
+            {
+                if (meta[field] >= val)
+                    return false;
+            }
+            else if (op == "$gte")          // >=
+            {
+                if (meta[field] < val)
+                    return false;
+            }
+            else if (op == "$lte")          // <=
+            {
+                if (meta[field] > val)
+                    return false;
+            }
+            else if (op == "$contains")     // .contains
+            {
+                auto arr = meta[field];
+
+                if (!arr.is_array());
+                    return false;
+                
+                if (std::find(arr.begin(), arr.end(), val) == arr.end())
+                    return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 
 } /* namespace demDB */

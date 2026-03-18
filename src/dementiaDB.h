@@ -44,8 +44,8 @@ public:
 
     size_t getIndexHNSWParam(const std::string& colName, HNSW_PARAM param) const;
 
-    std::vector<nlohmann::json> search(const std::string& colName, const std::vector<float>& q, size_t k);
-  
+    std::vector<nlohmann::json> search(const std::string& colName, const std::vector<float>& q, size_t k, const nlohmann::json& filter={}, size_t searchMult=3);
+    
     void insert(const std::string& colName, const float* q, const nlohmann::json& metadata);
 
     void bulkInsert(const std::string& colName, const float* data, size_t numVecs, size_t numDims, std::vector<nlohmann::json>&& metadata);
@@ -63,6 +63,8 @@ private:
         Metadata metadata;
     };
     std::unordered_map<std::string, Collection> m_collections;
+
+    bool postFilter(const nlohmann::json& meta, const nlohmann::json& filter);
 };
 
 } /* namespace demDB */
