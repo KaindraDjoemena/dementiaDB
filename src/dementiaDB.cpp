@@ -188,7 +188,7 @@ std::vector<nlohmann::json> DementiaDB::search(const std::string& colName, const
     return results;
 }
 
-void DementiaDB::insert(const std::string& colName, const float* q, const nlohmann::json& metadata)
+size_t DementiaDB::insert(const std::string& colName, const float* q, const nlohmann::json& metadata)
 {
     auto it = m_collections.find(colName);
     if (it == m_collections.end())
@@ -196,8 +196,10 @@ void DementiaDB::insert(const std::string& colName, const float* q, const nlohma
         throw std::runtime_error("Collection '" + colName + "' does not exist");
     }
 
-    it->second.index->insert(q);
+    size_t id = it->second.index->insert(q);
     it->second.metadata.insert(metadata);
+
+    return id;
 }
 
 void DementiaDB::bulkInsert(const std::string& colName, const float* data, size_t numVecs, size_t numDims, std::vector<nlohmann::json>&& metadata)

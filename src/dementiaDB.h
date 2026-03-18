@@ -46,7 +46,7 @@ public:
 
     std::vector<nlohmann::json> search(const std::string& colName, const std::vector<float>& q, size_t k, const nlohmann::json& filter={}, size_t searchMult=3);
     
-    void insert(const std::string& colName, const float* q, const nlohmann::json& metadata);
+    size_t insert(const std::string& colName, const float* q, const nlohmann::json& metadata);
 
     void bulkInsert(const std::string& colName, const float* data, size_t numVecs, size_t numDims, std::vector<nlohmann::json>&& metadata);
 
