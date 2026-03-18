@@ -311,7 +311,7 @@ int DementiaDB::open(const std::filesystem::path& p)
 }
 
 // PRIVATE
-bool postFilter(const nlohmann::json& meta, const nlohmann::json& filter)
+bool DementiaDB::postFilter(const nlohmann::json& meta, const nlohmann::json& filter)
 {
     for (auto& [field, cond] : filter.items())
     {
@@ -332,7 +332,7 @@ bool postFilter(const nlohmann::json& meta, const nlohmann::json& filter)
                 if (meta[field] <= val) 
                     return false;
             }
-            else if (op == "$ls")           // <
+            else if (op == "$lt")           // <
             {
                 if (meta[field] >= val)
                     return false;
@@ -351,7 +351,7 @@ bool postFilter(const nlohmann::json& meta, const nlohmann::json& filter)
             {
                 auto arr = meta[field];
 
-                if (!arr.is_array());
+                if (!arr.is_array())
                     return false;
                 
                 if (std::find(arr.begin(), arr.end(), val) == arr.end())
