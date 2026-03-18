@@ -216,6 +216,11 @@ void DementiaDB::remove(const std::string& colName, size_t id)
         throw std::runtime_error("Collection '" + colName + "' does not exist");
     }
 
+    if (id >= it->second.index->size())
+    {
+        throw std::runtime_error("id " + std::to_string(id) + " out of range");
+    }
+
     m_collections[colName].index->softDelete(id);
     m_collections[colName].metadata.remove(id);
 }
